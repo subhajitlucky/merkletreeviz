@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgba(37, 99, 235, 0.2);
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #8b5cf6;
+  --muted: #64748b;
+  --success: #10b981;
+  --grid-color: rgba(15, 23, 42, 0.05);
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f1f5f9;
+  --card: #0f172a;
+  --card-border: #1e293b;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgba(59, 130, 246, 0.3);
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --accent: #a78bfa;
+  --muted: #94a3b8;
+  --success: #34d399;
+  --grid-color: rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground transition-colors duration-500 antialiased;
+  }
+}
+
+.refinery-grid {
+  background-image: radial-gradient(circle at 1px 1px, var(--grid-color) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.2);
+  border-radius: 9999px;
+}
