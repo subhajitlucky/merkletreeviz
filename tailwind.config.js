@@ -14,6 +14,13 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
+      },
+      backgroundSize: {
+        '300%': '300%',
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -32,6 +39,10 @@ export default {
         muted: {
           DEFAULT: "var(--muted)",
           foreground: "var(--muted-foreground)",
+        },
+        card: {
+          DEFAULT: "var(--card)",
+          border: "var(--card-border)",
         },
       },
     },

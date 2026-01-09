@@ -124,9 +124,9 @@ const Playground = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 px-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4">
         {/* Input Floor (Sidebar) */}
-        <div className="xl:col-span-3 space-y-6">
+        <div className="lg:col-span-4 xl:col-span-3 space-y-6 order-2 lg:order-1">
           <div className="bg-card border border-card-border rounded-[2rem] p-6 shadow-lg space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -198,8 +198,8 @@ const Playground = () => {
         </div>
 
         {/* The Visualizer (Main Floor) */}
-        <div className="xl:col-span-9 space-y-6">
-          <div className="relative group">
+        <div className="lg:col-span-8 xl:col-span-9 space-y-6 order-1 lg:order-2">
+          <div className="relative group min-h-[400px] lg:min-h-[600px] flex flex-col">
             <TreeVisualizer 
               levels={tree.levels} 
               highlightedIds={highlightedIds}
@@ -207,8 +207,8 @@ const Playground = () => {
               onNodeClick={handleNodeClick}
             />
             
-            {/* Holographic Root Display */}
-            <div className="absolute top-6 right-6 w-56 p-5 bg-card/90 backdrop-blur-xl border border-card-border rounded-3xl shadow-xl pointer-events-none transition-all border-t-primary/20">
+            {/* Holographic Root Display - Responsive Positioning */}
+            <div className="order-first lg:order-none mb-4 lg:mb-0 relative lg:absolute lg:top-6 lg:right-6 w-full lg:w-56 p-5 bg-card/90 backdrop-blur-xl border border-card-border rounded-3xl shadow-xl pointer-events-none transition-all border-t-primary/20">
                <div className="flex items-center gap-2 mb-2">
                  <ShieldCheck className="w-4 h-4 text-success" />
                  <span className="text-[9px] font-black uppercase tracking-widest text-muted">Summit Hash</span>

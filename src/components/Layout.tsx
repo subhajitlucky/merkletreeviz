@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, TreeDeciduous, Github } from 'lucide-react';
+import { Sun, Moon, TreeDeciduous, Github, Menu, X } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useState } from 'react';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -11,6 +12,7 @@ function cn(...inputs: ClassValue[]) {
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
     { path: '/', label: 'Home' },
@@ -21,13 +23,24 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-muted/20 bg-background/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2">
-          <TreeDeciduous className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold text-foreground">
-            MerkleTreeViz
-          </span>
-        </Link>
+        <div className="flex items-center gap-4">
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden p-2 -ml-2 rounded-md hover:bg-secondary transition-colors"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
 
+          <Link to="/" className="flex items-center space-x-2">
+            <TreeDeciduous className="w-8 h-8 text-primary" />
+            <span className="text-xl font-bold text-foreground hidden sm:inline-block">
+              MerkleTreeViz
+            </span>
+          </Link>
+        </div>
+
+        {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -46,7 +59,7 @@ const Navbar = () => {
           })}
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-secondary transition-colors"
@@ -64,6 +77,30 @@ const Navbar = () => {
           </a>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="md:hidden border-t border-muted/20 bg-background">
+          <div className="px-4 py-4 space-y-2">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={cn(
+                    "block px-4 py-3 rounded-xl text-base font-medium transition-colors",
+                    isActive ? "bg-primary/10 text-primary" : "hover:bg-secondary text-muted-foreground"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
