@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, Hash, MousePointer2, GitBranch, Binary, CheckCircle2, BarChart3, Globe } from 'lucide-react';
 
 const topics = [
-  { id: 'why-integrity', title: 'Why Integrity Matters', icon: BookOpen },
+  { id: 'why-integrity', title: 'Why Data Integrity Matters', icon: BookOpen },
   { id: 'hashing-recap', title: 'Hashing Recap', icon: Hash },
   { id: 'leaf-nodes', title: 'Leaf Nodes', icon: MousePointer2 },
   { id: 'internal-nodes', title: 'Internal Nodes', icon: GitBranch },

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, TreeDeciduous, BookOpen, PlayCircle, Github } from 'lucide-react';
+import { Sun, Moon, TreeDeciduous, Github } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -13,14 +13,14 @@ const Navbar = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Home', icon: TreeDeciduous },
-    { path: '/learn', label: 'Learn', icon: BookOpen },
-    { path: '/playground', label: 'Playground', icon: PlayCircle },
+    { path: '/', label: 'Home' },
+    { path: '/learn', label: 'Learn' },
+    { path: '/playground', label: 'Playground' },
   ];
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-muted/20 bg-background/80 backdrop-blur-md">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <TreeDeciduous className="w-8 h-8 text-primary" />
           <span className="text-xl font-bold text-foreground">
@@ -30,18 +30,16 @@ const Navbar = () => {
 
         <div className="hidden md:flex items-center space-x-6">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  "flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary",
+                  "text-sm font-medium transition-colors hover:text-primary",
                   isActive ? "text-primary" : "text-muted"
                 )}
               >
-                <Icon className="w-4 h-4" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -74,12 +72,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 pt-4 pb-8">
+      <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4 pb-8">
         {children}
       </main>
       <footer className="border-t border-muted/20 py-8">
-        <div className="container mx-auto px-4 text-center text-muted text-sm">
-          <p>© 2025 MerkleTreeViz. Built for educational purposes.</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted text-sm">
+          <p>© {new Date().getFullYear()} MerkleTreeViz. Built for educational purposes.</p>
         </div>
       </footer>
     </div>

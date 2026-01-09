@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MerkleTree } from '../lib/merkle';
+import { MerkleTree, type Node } from '../lib/merkle';
 import TreeVisualizer from '../components/TreeVisualizer';
 import { Plus, Trash2, Search, Database, Info, RefreshCw, Zap, ShieldCheck } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -35,7 +35,12 @@ const Playground = () => {
   }, [tamperedIndex]);
 
   useEffect(() => {
-    updateTree(items);
+    let active = true;
+    const run = async () => {
+      if (active) await updateTree(items);
+    };
+    run();
+    return () => { active = false; };
   }, [items, updateTree]);
 
   const addItem = () => {
@@ -75,17 +80,17 @@ const Playground = () => {
     setSelectedLeafIndex(index);
   };
 
-  const handleNodeClick = (node: any) => {
+  const handleNodeClick = (node: Node) => {
     if (node.isLeaf) {
       const index = tree.levels[0].findIndex(n => n.id === node.id);
       if (index !== -1) generateProof(index);
     } else {
       const ids = new Set<string>();
-      let current = node;
+      let current: Node | undefined = node;
       while (current) {
         ids.add(current.id);
-        const parent = tree.nodes.get(current.parentId || '');
-        current = parent;
+        const parentId: string | undefined = current.parentId;
+        current = parentId ? tree.nodes.get(parentId) : undefined;
       }
       setHighlightedIds(ids);
       setSelectedLeafIndex(null);
