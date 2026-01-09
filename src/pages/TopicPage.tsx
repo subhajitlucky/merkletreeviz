@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Hash, Database, GitMerge, ShieldCheck, Zap, GitBranch, BarChart3, Globe, Lock, AlertTriangle, CheckCircle, Plus, Minus, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Hash, Database, GitMerge, ShieldCheck, Zap, GitBranch, BarChart3, Globe, AlertTriangle, CheckCircle, Plus, Minus, XCircle, type LucideIcon } from 'lucide-react';
 import { useRef, useState, useEffect, type FC } from 'react';
 import { sha256 } from '../lib/merkle';
 
@@ -105,8 +105,8 @@ const AvalancheSimulation = () => {
             return (
               <motion.div
                 key={`${i}-${bit}-${input}`}
-                initial={{ scale: 0.5, opacity: 0.5, backgroundColor: isFlipped ? 'var(--accent)' : (bit ? 'var(--primary)' : 'var(--secondary)') }}
-                animate={{ scale: 1, opacity: 1, backgroundColor: bit ? 'var(--primary)' : 'var(--secondary)' }}
+                initial={{ scale: 0.5, opacity: 0.5, backgroundColor: isFlipped ? '#f59e0b' : (bit ? '#3b82f6' : '#e2e8f0') }}
+                animate={{ scale: 1, opacity: 1, backgroundColor: bit ? '#3b82f6' : '#e2e8f0' }}
                 transition={{ duration: 0.5, delay: i * 0.002 }}
                 className={`w-3 h-3 md:w-4 md:h-4 rounded-sm`}
               />
@@ -505,67 +505,274 @@ const BinaryStructureVisualizer = () => {
 };
 
 const EfficiencyVisualizer = () => {
+  const [items, setItems] = useState(10);
+  const maxItems = 1000000;
+  
+  const logValue = Math.ceil(Math.log2(items));
+  const maxLog = Math.ceil(Math.log2(maxItems));
+  
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseInt(e.target.value);
+    const newItems = Math.round(Math.pow(10, (val / 100) * 6));
+    setItems(Math.max(1, newItems));
+  };
+
   return (
-    <div className="w-full space-y-8 max-w-sm">
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs font-bold uppercase">
-          <span>Data Size (Linear)</span>
-          <span className="text-red-500">1,000,000 items</span>
+    <div className="flex flex-col items-center w-full h-full max-w-xl py-6 space-y-10">
+      {/* Narrative Header */}
+      <div className="text-center space-y-2">
+        <h3 className="text-2xl font-bold">The Power of Logarithms</h3>
+        <p className="text-muted-foreground text-sm max-w-md mx-auto">
+          See how Merkle Trees save bandwidth. Compare downloading the 
+          <span className="text-red-500 font-bold"> entire history </span> 
+          vs just the 
+          <span className="text-green-500 font-bold"> tiny proof </span> 
+          needed to verify one transaction.
+        </p>
+      </div>
+
+      {/* Interactive Controls */}
+      <div className="w-full bg-secondary/20 p-6 rounded-3xl border-2 border-muted/20 space-y-6">
+        <div className="flex justify-between items-end">
+          <div>
+            <div className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Total Transactions</div>
+            <div className="text-4xl font-black text-foreground font-mono">{items.toLocaleString()}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Hashes Needed</div>
+            <div className="text-4xl font-black text-green-500 font-mono">{logValue}</div>
+          </div>
         </div>
-        <div className="h-4 w-full bg-secondary rounded-full overflow-hidden">
-          <motion.div 
-            className="h-full bg-red-500"
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 2, ease: "easeOut" }}
-          />
+        
+        <input 
+          type="range" 
+          min="0" 
+          max="100" 
+          defaultValue="10"
+          onChange={handleSliderChange}
+          className="w-full h-4 bg-muted/30 rounded-full appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
+        />
+        <div className="flex justify-between text-[10px] font-bold uppercase text-muted">
+          <span>1 Tx</span>
+          <span>1,000,000 Tx</span>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs font-bold uppercase">
-          <span>Proof Size (Logarithmic)</span>
-          <span className="text-green-500">Only 20 hashes!</span>
+      {/* Visual Metaphor Chart */}
+      <div className="w-full grid gap-6">
+        
+        {/* Scenario A: Without Merkle Tree */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-red-500 flex items-center">
+              <Database className="w-4 h-4 mr-2" /> Without Merkle Tree
+            </span>
+            <span className="text-xs font-mono font-bold text-muted">Download {items.toLocaleString()} items</span>
+          </div>
+          <div className="h-16 w-full bg-muted/10 rounded-2xl overflow-hidden relative border border-muted/20">
+            <motion.div 
+              className="h-full bg-red-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${(items / maxItems) * 100}%` }}
+              transition={{ type: "spring", stiffness: 50 }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+               <span className="text-xs font-bold text-foreground/50 uppercase tracking-widest">
+                 Linear Growth (O(n))
+               </span>
+            </div>
+          </div>
         </div>
-        <div className="h-4 w-full bg-secondary rounded-full overflow-hidden">
-          <motion.div 
-            className="h-full bg-green-500"
-            initial={{ width: "0%" }}
-            animate={{ width: "5%" }}
-            transition={{ duration: 2, ease: "easeOut" }}
-          />
+
+        {/* Scenario B: With Merkle Tree */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-green-500 flex items-center">
+              <Zap className="w-4 h-4 mr-2" /> With Merkle Proof
+            </span>
+            <span className="text-xs font-mono font-bold text-muted">Download {logValue} hashes</span>
+          </div>
+          <div className="h-16 w-full bg-muted/10 rounded-2xl overflow-hidden relative border border-muted/20">
+            <motion.div 
+              className="h-full bg-green-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${(logValue / maxLog) * 100}%` }}
+              transition={{ type: "spring", stiffness: 50 }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+               <span className="text-xs font-bold text-foreground/50 uppercase tracking-widest">
+                 Logarithmic Scale (O(log n))
+               </span>
+            </div>
+          </div>
         </div>
-      </div>
-      
-      <div className="p-4 bg-muted/10 rounded-lg text-xs italic text-center text-muted">
-        As data grows to infinity, the proof size barely moves.
       </div>
     </div>
   );
 };
 
 const BlockchainVisualizer = () => {
+  const [hacked, setHacked] = useState(false);
+
   return (
-    <div className="flex items-center space-x-2 overflow-x-hidden w-full justify-center">
-      {[1, 2, 3].map((i) => (
-        <motion.div 
-          key={i}
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: i * 0.3 }}
-          className="flex-shrink-0 w-24 md:w-32 h-32 md:h-40 bg-background border-2 border-muted rounded-xl p-2 md:p-3 flex flex-col space-y-2 relative"
+    <div className="flex flex-col items-center w-full h-full py-6 space-y-8">
+      {/* Narrative Controls */}
+      <div className="flex flex-col items-center space-y-4 text-center max-w-lg">
+        <h3 className="text-2xl font-bold flex items-center gap-2">
+          {hacked ? <span className="text-red-500 flex items-center gap-2"><AlertTriangle className="w-6 h-6"/> CHAIN BROKEN</span> : <span className="text-green-500 flex items-center gap-2"><ShieldCheck className="w-6 h-6"/> CHAIN SECURE</span>}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Blockchains link blocks together using hashes. The <strong className="text-primary">Merkle Root</strong> summarizes all transactions. 
+          If you change one transaction, the Root changes, breaking the link to the next block.
+        </p>
+        
+        <button
+          onClick={() => setHacked(!hacked)}
+          className={`px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all transform hover:scale-105 ${
+            hacked 
+              ? "bg-green-500 text-white shadow-green-500/20" 
+              : "bg-red-500 text-white shadow-red-500/20"
+          }`}
         >
-          <div className="text-[8px] md:text-[10px] font-bold text-muted uppercase">Block #{100+i}</div>
-          <div className="flex-1 bg-secondary/50 rounded flex items-center justify-center flex-col space-y-1">
-             <div className="w-10 h-10 md:w-16 md:h-16 border border-primary/30 rounded bg-primary/5 flex items-center justify-center">
-               <Zap className="w-4 h-4 md:w-6 md:h-6 text-primary" />
-             </div>
-             <div className="text-[6px] md:text-[8px] font-mono text-primary">Merkle Root</div>
-          </div>
-          <div className="h-1 bg-muted/20 w-full rounded"></div>
-          {i < 3 && <div className="absolute top-1/2 -right-3 md:-right-4 w-2 md:w-4 h-0.5 bg-muted"></div>}
-        </motion.div>
-      ))}
+          {hacked ? "Repair Ledger" : "Attempt Hack"}
+        </button>
+      </div>
+
+      {/* The Chain Visualizer */}
+      <div className="relative w-full max-w-4xl flex items-center justify-center gap-4 md:gap-8 px-4 overflow-x-auto pb-8">
+        {/* Connection Line Layer (Background) */}
+        <div className="absolute top-1/2 left-0 w-full h-2 bg-muted/10 -z-10" />
+
+        {/* BLOCK 100 (The Victim) */}
+        <div className="relative group">
+          <motion.div 
+            animate={{ 
+              borderColor: hacked ? "#ef4444" : "#e2e8f0", // Replaced var(--border)
+              boxShadow: hacked ? "0 0 30px rgba(239, 68, 68, 0.2)" : "none"
+            }}
+            className="w-48 bg-card border-2 rounded-2xl p-4 flex flex-col gap-3 shadow-xl z-10"
+          >
+            <div className="flex justify-between items-center border-b border-muted/20 pb-2">
+              <span className="text-[10px] font-black text-muted uppercase">Block #100</span>
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            </div>
+            
+            {/* Merkle Root Display */}
+            <div className="bg-secondary/50 p-2 rounded-lg text-center">
+              <div className="text-[8px] font-bold text-muted uppercase mb-1">Merkle Root</div>
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={hacked ? "bad-root" : "good-root"}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`font-mono text-[10px] font-bold ${hacked ? "text-red-500" : "text-primary"}`}
+                >
+                  {hacked ? "0xDEAD...BEEF" : "0x7A91...3F2C"}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Transactions */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] p-1.5 rounded bg-muted/10">
+                <span className="text-muted-foreground">Tx_1: Alice → Bob</span>
+              </div>
+              <motion.div 
+                animate={{ backgroundColor: hacked ? "rgba(239, 68, 68, 0.1)" : "rgba(100, 116, 139, 0.1)" }} // Replaced rgba(var(--muted)...)
+                className="flex items-center justify-between text-[10px] p-1.5 rounded border border-transparent"
+              >
+                <span className={hacked ? "text-red-500 font-bold" : "text-muted-foreground"}>
+                  {hacked ? "Tx_2: Alice → EVE" : "Tx_2: Alice → Charlie"}
+                </span>
+                {hacked && <AlertTriangle className="w-3 h-3 text-red-500" />}
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Chain Link 1 -> 2 */}
+        <div className="relative flex items-center justify-center w-12">
+           <motion.div 
+             animate={{ 
+               backgroundColor: hacked ? "#ef4444" : "#22c55e",
+               rotate: hacked ? 45 : 0,
+               y: hacked ? 10 : 0
+             }}
+             className="w-8 h-2 rounded-full"
+           />
+           {hacked && (
+             <motion.div 
+               initial={{ scale: 0 }} animate={{ scale: 1 }}
+               className="absolute -top-6 text-[8px] font-bold text-red-500 bg-red-100 px-2 py-1 rounded-full whitespace-nowrap"
+             >
+               LINK BROKEN
+             </motion.div>
+           )}
+        </div>
+
+        {/* BLOCK 101 (The Orphan) */}
+        <div className="relative opacity-90">
+          <motion.div 
+            animate={{ 
+              opacity: hacked ? 0.5 : 1,
+              scale: hacked ? 0.95 : 1
+            }}
+            className="w-48 bg-card border-2 border-border rounded-2xl p-4 flex flex-col gap-3 shadow-lg"
+          >
+            <div className="flex justify-between items-center border-b border-muted/20 pb-2">
+              <span className="text-[10px] font-black text-muted uppercase">Block #101</span>
+              {hacked ? <XCircle className="w-3 h-3 text-red-500" /> : <CheckCircle className="w-3 h-3 text-green-500" />}
+            </div>
+
+            <div className="p-2 rounded-lg border border-dashed border-muted relative overflow-hidden">
+               <div className="text-[8px] font-bold text-muted uppercase mb-1">Previous Hash</div>
+               <div className={`font-mono text-[10px] font-bold ${hacked ? "text-red-500 line-through" : "text-green-600"}`}>
+                 0x7A91...3F2C
+               </div>
+               {hacked && (
+                 <div className="text-[8px] font-bold text-red-500 mt-1">
+                   MISMATCH! Expected 0xDEAD...
+                 </div>
+               )}
+            </div>
+
+            <div className="bg-secondary/50 p-2 rounded-lg text-center opacity-50">
+              <div className="text-[8px] font-bold text-muted uppercase">Merkle Root</div>
+              <div className="font-mono text-[10px] text-muted-foreground">0xB2C1...9A8D</div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Chain Link 2 -> 3 */}
+        <div className="relative flex items-center justify-center w-12 opacity-50">
+           <div className={`w-8 h-2 rounded-full ${hacked ? "bg-muted" : "bg-green-500"}`} />
+        </div>
+
+        {/* BLOCK 102 (The Future) */}
+        <div className="relative opacity-60">
+          <motion.div 
+            animate={{ 
+              opacity: hacked ? 0.3 : 1,
+              scale: hacked ? 0.9 : 1
+            }}
+            className="w-48 bg-card border-2 border-border rounded-2xl p-4 flex flex-col gap-3 shadow-sm"
+          >
+            <div className="flex justify-between items-center border-b border-muted/20 pb-2">
+              <span className="text-[10px] font-black text-muted uppercase">Block #102</span>
+              {hacked && <XCircle className="w-3 h-3 text-red-500" />}
+            </div>
+            <div className="p-2 rounded-lg border border-dashed border-muted text-center">
+               <div className="text-[8px] font-bold text-muted uppercase">Previous Hash</div>
+               <div className="font-mono text-[10px] text-muted-foreground">0xB2C1...9A8D</div>
+            </div>
+            <div className="bg-secondary/50 p-2 rounded-lg text-center">
+              <div className="text-[8px] font-bold text-muted uppercase">Merkle Root</div>
+              <div className="font-mono text-[10px] text-muted-foreground">0xE5F4...1C2B</div>
+            </div>
+          </motion.div>
+        </div>
+
+      </div>
     </div>
   );
 };
@@ -573,153 +780,158 @@ const BlockchainVisualizer = () => {
 const ProofPathVisualizer = () => {
   const [step, setStep] = useState(0);
   
-  // Simulation Data
-  const steps = [
-    { label: "Start", desc: "We have Data & Trusted Root" },
-    { label: "Hash Data", desc: "H(Data) = Leaf Hash" },
-    { label: "Combine Sibling 1", desc: "H(Leaf + Sibling 1)" },
-    { label: "Combine Sibling 2", desc: "H(Result + Sibling 2)" },
-    { label: "Verify", desc: "Matches Trusted Root?" }
-  ];
+  // Coordinates for perfect alignment (viewBox="0 0 400 300")
+  const coords = {
+    root: { x: 200, y: 50 },
+    l1: [
+      { x: 100, y: 150 }, // Node 0
+      { x: 300, y: 150 }  // Node 1
+    ],
+    l2: [
+      { x: 50, y: 250 },  // Leaf 0
+      { x: 150, y: 250 }, // Leaf 1
+      { x: 250, y: 250 }, // Leaf 2 (Target)
+      { x: 350, y: 250 }  // Leaf 3 (Sibling 1)
+    ]
+  };
 
+  const next = () => setStep(s => (s + 1) % 5);
   const reset = () => setStep(0);
-  const next = () => setStep(s => Math.min(steps.length - 1, s + 1));
 
   return (
-    <div className="flex flex-col items-center w-full h-full max-w-sm py-4 space-y-6">
-      {/* Trusted Root (The Goal) */}
-      <div className="w-full flex items-center justify-between bg-secondary/30 p-3 rounded-xl border border-muted/20">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Lock className="w-4 h-4 text-primary" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Trusted Root</span>
-            <span className="text-xs font-mono font-bold text-primary">0x9a7f...2b</span>
-          </div>
+    <div className="flex flex-col items-center w-full h-full max-w-2xl py-2 space-y-4">
+      {/* 1. Header State */}
+      <div className="flex items-center justify-between w-full px-6 py-2 bg-secondary/30 rounded-2xl border border-muted/20">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Verification Status</span>
+          <span className={`text-sm font-bold ${step === 4 ? "text-green-500" : "text-primary"}`}>
+            {step === 0 && "Select Target Leaf"}
+            {step === 1 && "Target Data Hashed"}
+            {step === 2 && "Added Sibling #1"}
+            {step === 3 && "Added Sibling #2"}
+            {step === 4 && "Merkle Root Verified!"}
+          </span>
         </div>
-        {step === 4 && (
-          <motion.div 
-            initial={{ scale: 0 }} animate={{ scale: 1 }}
-            className="text-green-500 font-bold text-xs flex items-center"
-          >
-            <CheckCircle className="w-4 h-4 mr-1" /> MATCH
-          </motion.div>
-        )}
-      </div>
-
-      {/* Verification Chain */}
-      <div className="flex-grow w-full relative flex flex-col justify-end space-y-2">
-        {/* Step 3: Top Hash (Result) */}
-        <AnimatePresence>
-          {step >= 3 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center p-3 bg-card border-2 border-primary/20 rounded-xl relative z-10"
-            >
-              <ArrowRight className="absolute -left-6 text-muted/30 rotate-[-45deg]" />
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] uppercase font-bold text-muted mb-1">Calculated Root</span>
-                <span className={`font-mono text-sm font-bold ${step === 4 ? "text-green-500" : "text-foreground"}`}>
-                  0x9a7f...2b
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Step 2: Sibling 2 */}
-        <AnimatePresence>
-          {step >= 3 && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }} 
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center justify-end space-x-2 pr-4"
-            >
-              <span className="text-[10px] font-mono text-yellow-500 font-bold">0x3c1e... (Proof Item 2)</span>
-              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/50 flex items-center justify-center">
-                <Hash className="w-4 h-4 text-yellow-500" />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Connector */}
-        {step >= 3 && <div className="w-0.5 h-4 bg-primary/20 mx-auto" />}
-
-        {/* Step 2: Intermediate Hash */}
-        <AnimatePresence>
-          {step >= 2 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center p-3 bg-card border border-muted rounded-xl"
-            >
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] uppercase font-bold text-muted mb-1">Intermediate Hash</span>
-                <span className="font-mono text-xs text-muted-foreground">0xb7e1...89</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Step 1: Sibling 1 */}
-        <AnimatePresence>
-          {step >= 2 && (
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }} 
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center justify-start space-x-2 pl-4"
-            >
-              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/50 flex items-center justify-center">
-                <Hash className="w-4 h-4 text-yellow-500" />
-              </div>
-              <span className="text-[10px] font-mono text-yellow-500 font-bold">(Proof Item 1) 0x1a4d...</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Connector */}
-        {step >= 2 && <div className="w-0.5 h-4 bg-primary/20 mx-auto" />}
-
-        {/* Step 1: Leaf Hash */}
-        <AnimatePresence>
-          {step >= 1 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center justify-center p-3 bg-primary/10 border border-primary/30 rounded-xl"
-            >
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] uppercase font-bold text-primary mb-1">Leaf Hash</span>
-                <span className="font-mono text-xs text-primary">0xf2a9...c4</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Connector */}
-        {step >= 1 && <div className="w-0.5 h-4 bg-primary/20 mx-auto" />}
-
-        {/* Step 0: User Data */}
-        <div className={`flex items-center justify-center p-4 rounded-xl border-2 transition-all ${step > 0 ? "bg-muted/10 border-muted/20 opacity-50" : "bg-card border-primary"}`}>
-          <Database className="w-5 h-5 mr-3 text-primary" />
-          <div className="text-sm font-bold">My Transaction</div>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="w-full flex items-center justify-between bg-secondary/20 p-2 rounded-full">
-        <div className="px-4 text-[10px] font-bold uppercase tracking-widest text-muted">
-          Step {step + 1} of 5
-        </div>
-        <button
+        <button 
           onClick={step === 4 ? reset : next}
-          className="px-6 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-full hover:shadow-lg hover:scale-105 transition-all"
+          className="px-6 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-lg hover:scale-105 transition-all"
         >
-          {step === 4 ? "Restart" : "Next Operation"}
+          {step === 4 ? "Restart" : step === 0 ? "Begin" : "Next Step"}
         </button>
+      </div>
+
+      {/* 2. Unified SVG Simulation */}
+      <div className="relative w-full flex-grow aspect-[4/3] bg-background/50 rounded-[2rem] border border-muted/10 shadow-inner overflow-visible">
+        <svg className="w-full h-full overflow-visible" viewBox="0 0 400 300">
+          
+          {/* --- Connections (Paths) --- */}
+          {/* Level 1 -> Root */}
+          <motion.path 
+            d={`M ${coords.l1[0].x} ${coords.l1[0].y} L ${coords.root.x} ${coords.root.y}`}
+            stroke="currentColor" strokeWidth="2" fill="none"
+            animate={{ stroke: step >= 4 ? "#3b82f6" : "#94a3b8", opacity: step >= 4 ? 1 : 0.2 }}
+            className="text-muted"
+          />
+          <motion.path 
+            d={`M ${coords.l1[1].x} ${coords.l1[1].y} L ${coords.root.x} ${coords.root.y}`}
+            stroke="var(--primary)" strokeWidth="3" fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: step >= 3 ? 1 : 0, opacity: step >= 3 ? 1 : 0.2 }}
+          />
+
+          {/* Level 2 -> Level 1 */}
+          <path d={`M ${coords.l2[0].x} ${coords.l2[0].y} L ${coords.l1[0].x} ${coords.l1[0].y}`} stroke="var(--muted)" strokeWidth="2" strokeOpacity="0.1" fill="none" />
+          <path d={`M ${coords.l2[1].x} ${coords.l2[1].y} L ${coords.l1[0].x} ${coords.l1[0].y}`} stroke="var(--muted)" strokeWidth="2" strokeOpacity="0.1" fill="none" />
+          <motion.path 
+            d={`M ${coords.l2[2].x} ${coords.l2[2].y} L ${coords.l1[1].x} ${coords.l1[1].y}`}
+            stroke="var(--primary)" strokeWidth="3" fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: step >= 1 ? 1 : 0, opacity: step >= 1 ? 1 : 0.2 }}
+          />
+          <path d={`M ${coords.l2[3].x} ${coords.l2[3].y} L ${coords.l1[1].x} ${coords.l1[1].y}`} stroke="var(--muted)" strokeWidth="2" strokeOpacity="0.1" fill="none" />
+
+          {/* --- Nodes (Circles) --- */}
+          
+          {/* Root Node */}
+          <motion.g
+            animate={{ scale: step === 4 ? 1.2 : 1 }}
+          >
+            <circle cx={coords.root.x} cy={coords.root.y} r="20" className="fill-background stroke-muted border-2" strokeWidth="2" />
+            <motion.circle 
+              cx={coords.root.x} cy={coords.root.y} r="20" 
+              className="fill-primary/10 stroke-primary" 
+              strokeWidth="3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: step >= 4 ? 1 : 0, fill: step === 4 ? "#22c55e" : "#dbeafe", stroke: step === 4 ? "#22c55e" : "#3b82f6" }}
+            />
+            {step === 4 ? (
+              <CheckCircle className="text-white w-6 h-6" x={coords.root.x - 12} y={coords.root.y - 12} />
+            ) : (
+              <ShieldCheck className="text-muted w-6 h-6" x={coords.root.x - 12} y={coords.root.y - 12} />
+            )}
+          </motion.g>
+
+          {/* Intermediate Nodes */}
+          {coords.l1.map((c, i) => (
+            <motion.g key={`l1-${i}`}>
+              <circle cx={c.x} cy={c.y} r="15" className="fill-background stroke-muted" strokeWidth="2" />
+              <motion.circle 
+                cx={c.x} cy={c.y} r="15" 
+                animate={{ 
+                  opacity: (i === 1 && step >= 2) || (i === 0 && step >= 3) ? 1 : 0,
+                  fill: i === 0 && step === 3 ? "#eab308" : "var(--primary)" // Sibling 2 is yellow
+                }}
+                className="stroke-primary" strokeWidth="2"
+              />
+              <Hash className="text-muted w-4 h-4" x={c.x - 8} y={c.y - 8} />
+              {i === 0 && step === 3 && (
+                <text x={c.x} y={c.y + 30} textAnchor="middle" className="fill-yellow-500 text-[10px] font-bold">SIBLING #2</text>
+              )}
+            </motion.g>
+          ))}
+
+          {/* Leaves */}
+          {coords.l2.map((c, i) => {
+            const isTarget = i === 2;
+            const isSibling = i === 3;
+            return (
+              <motion.g key={`l2-${i}`} onClick={() => isTarget && step === 0 && next()} className={isTarget && step === 0 ? "cursor-pointer" : ""}>
+                <rect x={c.x - 15} y={c.y - 15} width="30" height="30" rx="8" className="fill-background stroke-muted" strokeWidth="2" />
+                <motion.rect 
+                  x={c.x - 15} y={c.y - 15} width="30" height="30" rx="8"
+                  animate={{ 
+                    opacity: (isTarget && step >= 1) || (isSibling && step >= 2) ? 1 : 0,
+                    fill: isSibling ? "#eab308" : "var(--primary)",
+                    stroke: isSibling ? "#eab308" : "var(--primary)"
+                  }}
+                  strokeWidth="2"
+                />
+                {isTarget ? (
+                  <Database className={step >= 1 ? "text-white" : "text-primary"} width="16" height="16" x={c.x - 8} y={c.y - 8} />
+                ) : (
+                  <Hash className={isSibling && step >= 2 ? "text-white" : "text-muted"} width="16" height="16" x={c.x - 8} y={c.y - 8} />
+                )}
+                {isTarget && step === 0 && (
+                  <text x={c.x} y={c.y + 35} textAnchor="middle" className="fill-primary text-[10px] font-bold animate-pulse">TARGET (CLICK)</text>
+                )}
+                {isSibling && step === 2 && (
+                  <text x={c.x} y={c.y + 35} textAnchor="middle" className="fill-yellow-500 text-[10px] font-bold">SIBLING #1</text>
+                )}
+              </motion.g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* 3. Narrative Explanation */}
+      <div className="w-full bg-primary/5 p-4 rounded-2xl border border-primary/10">
+        <p className="text-center text-sm text-muted-foreground font-medium leading-relaxed">
+          {step === 0 && "To verify data without the whole tree, we only need a specific path."}
+          {step === 1 && "First, we hash our target data. This gives us our initial 'Leaf Hash'."}
+          {step === 2 && "We combine our hash with Sibling #1 (Yellow) to calculate the parent hash."}
+          {step === 3 && "Now we combine that result with Sibling #2 to reach the top."}
+          {step === 4 && "Success! Our calculated hash matches the Trusted Root perfectly."}
+        </p>
       </div>
     </div>
   );
