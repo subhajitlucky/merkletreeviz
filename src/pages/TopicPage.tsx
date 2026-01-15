@@ -639,11 +639,12 @@ const BlockchainVisualizer = () => {
       </div>
 
       {/* The Chain Visualizer */}
-      <div className="relative w-full max-w-4xl flex items-center justify-center gap-4 md:gap-8 px-4 overflow-x-auto pb-8">
-        {/* Connection Line Layer (Background) */}
-        <div className="absolute top-1/2 left-0 w-full h-2 bg-muted/10 -z-10" />
+      <div className="w-full max-w-4xl overflow-x-auto pb-8">
+        <div className="relative min-w-max flex items-center justify-center gap-4 md:gap-8 px-4 mx-auto">
+          {/* Connection Line Layer (Background) */}
+          <div className="absolute top-1/2 left-0 w-full h-2 bg-muted/10 -z-10" />
 
-        {/* BLOCK 100 (The Victim) */}
+          {/* BLOCK 100 (The Victim) */}
         <div className="relative group">
           <motion.div 
             animate={{ 
@@ -772,6 +773,7 @@ const BlockchainVisualizer = () => {
           </motion.div>
         </div>
 
+        </div>
       </div>
     </div>
   );
