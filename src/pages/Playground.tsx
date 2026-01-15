@@ -126,7 +126,7 @@ const Playground = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4">
         {/* Input Floor (Sidebar) */}
-        <div className="lg:col-span-4 xl:col-span-3 space-y-6 order-2 lg:order-1">
+        <div className="lg:col-span-4 xl:col-span-3 space-y-6">
           <div className="bg-card border border-card-border rounded-[2rem] p-6 shadow-lg space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -198,7 +198,7 @@ const Playground = () => {
         </div>
 
         {/* The Visualizer (Main Floor) */}
-        <div className="lg:col-span-8 xl:col-span-9 space-y-6 order-1 lg:order-2">
+        <div className="lg:col-span-8 xl:col-span-9 space-y-6">
           <div className="relative group min-h-[400px] lg:min-h-[600px] flex flex-col">
             <TreeVisualizer 
               levels={tree.levels} 
