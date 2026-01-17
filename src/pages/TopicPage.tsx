@@ -505,16 +505,15 @@ const BinaryStructureVisualizer = () => {
 };
 
 const EfficiencyVisualizer = () => {
-  const [items, setItems] = useState(10);
+  const [sliderValue, setSliderValue] = useState(17); // Starts at ~10 items
   const maxItems = 1000000;
   
+  const items = Math.max(1, Math.round(Math.pow(10, (sliderValue / 100) * 6)));
   const logValue = Math.ceil(Math.log2(items));
   const maxLog = Math.ceil(Math.log2(maxItems));
   
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value);
-    const newItems = Math.round(Math.pow(10, (val / 100) * 6));
-    setItems(Math.max(1, newItems));
+    setSliderValue(parseInt(e.target.value));
   };
 
   return (
@@ -532,29 +531,60 @@ const EfficiencyVisualizer = () => {
       </div>
 
       {/* Interactive Controls */}
-      <div className="w-full bg-secondary/20 p-6 rounded-3xl border-2 border-muted/20 space-y-6">
-        <div className="flex justify-between items-end">
+      <div className="w-full bg-secondary/30 backdrop-blur-sm p-8 rounded-[2rem] border border-muted/20 shadow-xl space-y-8 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+        
+        <div className="flex justify-between items-end relative z-10">
           <div>
-            <div className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Total Transactions</div>
-            <div className="text-4xl font-black text-foreground font-mono">{items.toLocaleString()}</div>
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1 ml-1">Total Transactions</div>
+            <div className="text-4xl font-black text-foreground font-mono tracking-tight flex items-baseline">
+              {items.toLocaleString()}
+              <span className="text-sm text-muted-foreground ml-2 font-normal">items</span>
+            </div>
           </div>
           <div className="text-right">
-            <div className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Hashes Needed</div>
-            <div className="text-4xl font-black text-green-500 font-mono">{logValue}</div>
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1 mr-1">Hashes Needed</div>
+            <div className="text-4xl font-black text-green-500 font-mono tracking-tight flex items-baseline justify-end">
+              {logValue}
+              <span className="text-sm text-green-500/70 ml-2 font-normal">hashes</span>
+            </div>
           </div>
         </div>
         
-        <input 
-          type="range" 
-          min="0" 
-          max="100" 
-          defaultValue="10"
-          onChange={handleSliderChange}
-          className="w-full h-4 bg-muted/30 rounded-full appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
-        />
-        <div className="flex justify-between text-[10px] font-bold uppercase text-muted">
-          <span>1 Tx</span>
-          <span>1,000,000 Tx</span>
+        {/* Premium Slider */}
+        <div className="relative w-full h-10 flex items-center select-none touch-none group/slider">
+          {/* Track Background */}
+          <div className="absolute w-full h-4 bg-muted/20 rounded-full overflow-hidden shadow-inner border border-muted/10">
+             {/* Progress Fill */}
+             <div 
+                className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all duration-100 ease-out" 
+                style={{ width: `${sliderValue}%` }}
+             />
+          </div>
+
+          {/* Custom Thumb (Visual Only) */}
+          <div 
+              className="absolute h-8 w-8 bg-background border-[3px] border-primary rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.2)] transform -translate-x-1/2 flex items-center justify-center z-10 pointer-events-none transition-transform duration-100 ease-out group-hover/slider:scale-110"
+              style={{ left: `${sliderValue}%` }}
+          >
+              <div className="w-2 h-2 bg-primary rounded-full" />
+          </div>
+
+          {/* Actual Input (Invisible interaction layer) */}
+          <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              value={sliderValue}
+              onChange={handleSliderChange}
+              className="absolute w-full h-full opacity-0 cursor-pointer z-20"
+              aria-label="Adjust total transactions"
+          />
+        </div>
+
+        <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground/70 px-1">
+          <span>1 Transaction</span>
+          <span>1 Million Transactions</span>
         </div>
       </div>
 
@@ -567,18 +597,18 @@ const EfficiencyVisualizer = () => {
             <span className="text-sm font-bold text-red-500 flex items-center">
               <Database className="w-4 h-4 mr-2" /> Without Merkle Tree
             </span>
-            <span className="text-xs font-mono font-bold text-muted">Download {items.toLocaleString()} items</span>
+            <span className="text-xs font-mono font-bold text-muted-foreground">Download {items.toLocaleString()} items</span>
           </div>
-          <div className="h-16 w-full bg-muted/10 rounded-2xl overflow-hidden relative border border-muted/20">
+          <div className="h-14 w-full bg-muted/10 rounded-xl overflow-hidden relative border border-muted/20">
             <motion.div 
-              className="h-full bg-red-500"
+              className="h-full bg-gradient-to-r from-red-500/80 to-red-600"
               initial={{ width: 0 }}
               animate={{ width: `${(items / maxItems) * 100}%` }}
               transition={{ type: "spring", stiffness: 50 }}
             />
-            <div className="absolute inset-0 flex items-center justify-center">
-               <span className="text-xs font-bold text-foreground/50 uppercase tracking-widest">
-                 Linear Growth (O(n))
+            <div className="absolute inset-0 flex items-center justify-center opacity-70">
+               <span className="text-[10px] font-bold text-foreground/50 uppercase tracking-widest mix-blend-overlay">
+                 Linear Growth O(n)
                </span>
             </div>
           </div>
@@ -590,17 +620,17 @@ const EfficiencyVisualizer = () => {
             <span className="text-sm font-bold text-green-500 flex items-center">
               <Zap className="w-4 h-4 mr-2" /> With Merkle Proof
             </span>
-            <span className="text-xs font-mono font-bold text-muted">Download {logValue} hashes</span>
+            <span className="text-xs font-mono font-bold text-muted-foreground">Download {logValue} hashes</span>
           </div>
-          <div className="h-16 w-full bg-muted/10 rounded-2xl overflow-hidden relative border border-muted/20">
+          <div className="h-14 w-full bg-muted/10 rounded-xl overflow-hidden relative border border-muted/20">
             <motion.div 
-              className="h-full bg-green-500"
+              className="h-full bg-gradient-to-r from-green-500/80 to-green-600"
               initial={{ width: 0 }}
-              animate={{ width: `${(logValue / maxLog) * 100}%` }}
+              animate={{ width: `${Math.max(2, (logValue / maxLog) * 100)}%` }}
               transition={{ type: "spring", stiffness: 50 }}
             />
-            <div className="absolute inset-0 flex items-center justify-center">
-               <span className="text-xs font-bold text-foreground/50 uppercase tracking-widest">
+            <div className="absolute inset-0 flex items-center justify-start pl-4 opacity-70">
+               <span className="text-[10px] font-bold text-foreground/50 uppercase tracking-widest mix-blend-overlay">
                  Logarithmic Scale (O(log n))
                </span>
             </div>
@@ -1170,12 +1200,12 @@ const TopicPage: FC = () => {
           </Link>
         ) : <div />}
         {nextTopic ? (
-          <Link to={`/learn/${nextTopic}`} className="flex items-center text-primary font-bold bg-primary px-8 py-4 rounded-full text-primary-foreground hover:opacity-90 shadow-xl shadow-primary/20 transition-all">
+          <Link to={`/learn/${nextTopic}`} className="flex items-center font-bold bg-primary px-8 py-4 rounded-full text-primary-foreground hover:opacity-90 shadow-xl shadow-primary/20 transition-all">
             Next Topic
             <ArrowRight className="w-4 h-4 ml-2" />
           </Link>
         ) : (
-          <Link to="/playground" className="flex items-center text-accent font-bold bg-accent px-8 py-4 rounded-full text-accent-foreground hover:opacity-90 shadow-xl shadow-accent/20 transition-all">
+          <Link to="/playground" className="flex items-center font-bold bg-accent px-8 py-4 rounded-full text-accent-foreground hover:opacity-90 shadow-xl shadow-accent/20 transition-all">
             Explore Playground
             <ArrowRight className="w-4 h-4 ml-2" />
           </Link>

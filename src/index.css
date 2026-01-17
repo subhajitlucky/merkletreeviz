@@ -19,6 +19,7 @@
   --secondary-foreground: #171717;
   
   --accent: #2563eb;
+  --accent-foreground: #ffffff;
   --accent-glow: rgba(37, 99, 235, 0.1);
   
   --muted: #737373;
@@ -43,6 +44,7 @@
   --secondary-foreground: #ffffff;
   
   --accent: #3b82f6;
+  --accent-foreground: #ffffff;
   --accent-glow: rgba(59, 130, 246, 0.15);
   
   --muted: #a3a3a3;
