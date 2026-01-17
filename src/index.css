@@ -58,6 +58,7 @@
   html {
     font-family: 'Inter', sans-serif;
     scroll-behavior: smooth;
+    scroll-padding-top: 5rem; /* Ensure scroll-to-element doesn't hide behind navbar */
   }
   
   h1, h2, h3, h4, h5, h6 {
