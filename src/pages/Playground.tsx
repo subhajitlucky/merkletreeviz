@@ -2,8 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MerkleTree, type Node } from '../lib/merkle';
 import TreeVisualizer from '../components/TreeVisualizer';
-import { Plus, Trash2, Search, Database, Info, RefreshCw, Zap, ShieldCheck } from 'lucide-react';
+import { ChallengeMode } from '../components/ChallengeMode';
+import { Plus, Trash2, Search, Database, Info, RefreshCw, Zap, ShieldCheck, Gamepad2 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useSound } from '../hooks/useSound';
+
+type ContextMode = 'default' | 'bitcoin' | 'git' | 'spotify';
 
 const Playground = () => {
   const [items, setItems] = useState<string[]>(['TX_ALPHA', 'TX_BETA', 'TX_GAMMA', 'TX_DELTA']);
@@ -12,6 +16,10 @@ const Playground = () => {
   const [selectedLeafIndex, setSelectedLeafIndex] = useState<number | null>(null);
   const [tamperedIndex, setTamperedIndex] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [contextMode, setContextMode] = useState<ContextMode>('default');
+  const [isChallengeActive, setIsChallengeActive] = useState(false);
+  
+  const { playClick, playHover, playSuccess } = useSound();
 
   const updateTree = useCallback(async (data: string[]) => {
     setIsProcessing(true);
@@ -43,12 +51,32 @@ const Playground = () => {
     return () => { active = false; };
   }, [items, updateTree]);
 
+  const generateItem = (mode: ContextMode, index: number) => {
+    switch(mode) {
+      case 'bitcoin': return `Tx: ${Math.random().toString(16).slice(2, 10)}`;
+      case 'git': return `blob: ${Math.random().toString(36).slice(2, 8)}.ts`;
+      case 'spotify': return `Chunk: 0x${Math.random().toString(16).slice(2, 6)}`;
+      default: return `TX_${String.fromCharCode(65 + index)}`;
+    }
+  };
+
+  const handleContextChange = (mode: ContextMode) => {
+    playClick();
+    setContextMode(mode);
+    const newItems = Array(4).fill(0).map((_, i) => generateItem(mode, i));
+    setItems(newItems);
+    setTamperedIndex(null);
+    setHighlightedIds(new Set());
+  };
+
   const addItem = () => {
     if (items.length >= 8) return;
-    setItems([...items, `TX_${String.fromCharCode(69 + items.length)}`]);
+    playClick();
+    setItems([...items, generateItem(contextMode, items.length)]);
   };
 
   const removeItem = (index: number) => {
+    playClick();
     setItems(items.filter((_, i) => i !== index));
     setTamperedIndex(null);
     setHighlightedIds(new Set());
@@ -62,6 +90,7 @@ const Playground = () => {
   };
 
   const generateProof = (index: number) => {
+    playSuccess();
     const ids = new Set<string>();
     let currIdx = index;
     for (let i = 0; i < tree.levels.length; i++) {
@@ -81,6 +110,7 @@ const Playground = () => {
   };
 
   const handleNodeClick = (node: Node) => {
+    playClick();
     if (node.isLeaf) {
       const index = tree.levels[0].findIndex(n => n.id === node.id);
       if (index !== -1) generateProof(index);
@@ -112,15 +142,34 @@ const Playground = () => {
           </p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3 bg-card border border-card-border p-2 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-2 px-3 py-1 border-r border-card-border">
-             <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-             <span className="text-[9px] font-bold uppercase tracking-wider text-muted">Integrity Flow</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1">
-             <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-             <span className="text-[9px] font-bold uppercase tracking-wider text-muted">Data Tamper</span>
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+            {/* Context Switcher */}
+            <div className="flex bg-card border border-card-border p-1 rounded-2xl shadow-sm">
+                {(['default', 'bitcoin', 'git', 'spotify'] as ContextMode[]).map((mode) => (
+                    <button
+                        key={mode}
+                        onClick={() => handleContextChange(mode)}
+                        onMouseEnter={playHover}
+                        className={clsx(
+                            "px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all",
+                            contextMode === mode ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:text-foreground hover:bg-secondary"
+                        )}
+                    >
+                        {mode}
+                    </button>
+                ))}
+            </div>
+
+            <div className="hidden sm:flex items-center gap-3 bg-card border border-card-border p-2 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-2 px-3 py-1 border-r border-card-border">
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted">Integrity Flow</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted">Data Tamper</span>
+                </div>
+            </div>
         </div>
       </div>
 
@@ -135,6 +184,7 @@ const Playground = () => {
               </h3>
               <button 
                 onClick={addItem}
+                onMouseEnter={playHover}
                 className="p-2 bg-primary text-white rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-primary/20"
                 title="Add New Entry"
               >
@@ -158,7 +208,9 @@ const Playground = () => {
                     )}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[9px] font-black text-muted/40 uppercase">Entry #{idx}</span>
+                      <span className="text-[9px] font-black text-muted/40 uppercase">
+                          {contextMode === 'bitcoin' ? 'Transaction' : contextMode === 'git' ? 'File Blob' : contextMode === 'spotify' ? 'Audio Chunk' : 'Data Entry'} #{idx}
+                      </span>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => generateProof(idx)} className="p-1.5 hover:bg-primary/10 text-primary rounded-lg">
                           <Search className="w-4 h-4" />
@@ -198,8 +250,8 @@ const Playground = () => {
         </div>
 
         {/* The Visualizer (Main Floor) */}
-        <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-          <div className="relative group min-h-[400px] lg:min-h-[600px] flex flex-col">
+        <div className="lg:col-span-8 xl:col-span-9 space-y-6 flex flex-col">
+          <div className="relative group min-h-[400px] lg:min-h-[600px] flex flex-col order-1">
             <TreeVisualizer 
               levels={tree.levels} 
               highlightedIds={highlightedIds}
@@ -220,7 +272,7 @@ const Playground = () => {
           </div>
 
           {/* Educational Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="order-2 grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
                 title: "Vertical Forge",
@@ -247,8 +299,32 @@ const Playground = () => {
               </div>
             ))}
           </div>
+
+          {/* Challenge Mode CTA - Moved to bottom of simulation on small screens, and prominent on large */}
+          <div className="order-3 p-6 rounded-[2rem] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 shadow-lg relative overflow-hidden group cursor-pointer hover:border-indigo-500/40 transition-colors">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Gamepad2 className="w-16 h-16" />
+              </div>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2">Gamified Repair</h4>
+              <p className="text-xs font-medium text-foreground/70 mb-4">Can you find the corrupted shard in O(log n) clicks using binary search principles?</p>
+              <button 
+                className="w-full sm:w-auto px-8 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-indigo-500/20"
+                onClick={() => {
+                  playClick();
+                  setIsChallengeActive(true);
+                }}
+              >
+                  Start Challenge
+              </button>
+          </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isChallengeActive && (
+          <ChallengeMode onClose={() => setIsChallengeActive(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

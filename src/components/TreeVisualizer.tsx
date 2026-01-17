@@ -7,6 +7,7 @@ import { ShieldCheck, Database, Cpu } from 'lucide-react';
 interface TreeVisualizerProps {
   levels: Node[][];
   highlightedIds?: Set<string>;
+  brokenIds?: Set<string>;
   tamperedLeafIndex?: number | null;
   onNodeClick?: (node: Node) => void;
 }
@@ -14,6 +15,7 @@ interface TreeVisualizerProps {
 const TreeVisualizer: React.FC<TreeVisualizerProps> = ({ 
   levels, 
   highlightedIds = new Set(), 
+  brokenIds = new Set(),
   tamperedLeafIndex = null,
   onNodeClick
 }) => {
@@ -49,6 +51,7 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
               const y2 = height - (lIndex + 2) * verticalSpacing;
 
               const isPathActive = highlightedIds.has(node.id) && highlightedIds.has(parentLevel[parentIndex].id);
+              const isBroken = brokenIds.has(node.id) && brokenIds.has(parentLevel[parentIndex].id);
               const isCorrupted = node.isLeaf && tamperedLeafIndex === nIndex;
 
               return (
@@ -63,8 +66,8 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
                   <motion.path
                     d={`M ${x1} ${y1} L ${x2} ${y2}`}
                     fill="none"
-                    stroke={isCorrupted ? "#ef4444" : isPathActive ? "var(--accent)" : "transparent"}
-                    strokeWidth={isPathActive ? 2 : 1}
+                    stroke={isCorrupted || isBroken ? "#ef4444" : isPathActive ? "var(--accent)" : "transparent"}
+                    strokeWidth={isPathActive || isBroken ? 2 : 1}
                     strokeDasharray="8, 12"
                     animate={{ strokeDashoffset: [0, -20] }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -80,6 +83,7 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
               const x = (nIndex + 0.5) * (baseWidth / level.length);
               const y = height - (lIndex + 1) * verticalSpacing;
               const isHighlighted = highlightedIds.has(node.id);
+              const isBroken = brokenIds.has(node.id);
               const isTampered = node.isLeaf && tamperedLeafIndex === nIndex;
               const isRoot = lIndex === levels.length - 1;
 
@@ -94,18 +98,18 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
                   <motion.rect
                     x={x - 40} y={y - 18} width={80} height={36} rx={8}
                     animate={{ 
-                      stroke: isTampered ? '#ef4444' : isHighlighted ? 'var(--accent)' : 'var(--card-border)',
-                      fill: isHighlighted ? 'var(--accent)' : 'var(--card)',
-                      strokeWidth: isHighlighted || isTampered ? 2 : 1
+                      stroke: isTampered || isBroken ? '#ef4444' : isHighlighted ? 'var(--accent)' : 'var(--card-border)',
+                      fill: isBroken ? '#ef4444' : isHighlighted ? 'var(--accent)' : 'var(--card)',
+                      strokeWidth: isHighlighted || isTampered || isBroken ? 2 : 1
                     }}
                     className="transition-colors duration-300 shadow-sm"
                   />
 
                   <foreignObject x={x - 34} y={y - 12} width={16} height={16} className="pointer-events-none">
                     <div className="flex items-center justify-center h-full w-full">
-                      {isRoot ? <ShieldCheck className={clsx("w-3 h-3", isHighlighted ? "text-white" : "text-accent")} /> :
-                       lIndex === 0 ? <Database className={clsx("w-2.5 h-2.5", isHighlighted ? "text-white" : "text-muted")} /> :
-                       <Cpu className={clsx("w-2.5 h-2.5", isHighlighted ? "text-white" : "text-muted/40")} />}
+                      {isRoot ? <ShieldCheck className={clsx("w-3 h-3", isHighlighted || isBroken ? "text-white" : "text-accent")} /> :
+                       lIndex === 0 ? <Database className={clsx("w-2.5 h-2.5", isHighlighted || isBroken ? "text-white" : "text-muted")} /> :
+                       <Cpu className={clsx("w-2.5 h-2.5", isHighlighted || isBroken ? "text-white" : "text-muted/40")} />}
                     </div>
                   </foreignObject>
 
@@ -114,7 +118,7 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
                     textAnchor="middle"
                     className={clsx(
                       "text-[9px] font-mono font-bold tracking-tighter pointer-events-none",
-                      isHighlighted ? "fill-white" : "fill-foreground"
+                      isHighlighted || isBroken ? "fill-white" : "fill-foreground"
                     )}
                   >
                     {node.hash.substring(0, 6)}
@@ -123,13 +127,13 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
                   <text 
                     x={x + 10} y={y + 10} 
                     textAnchor="middle"
-                    className={clsx("text-[6px] font-black uppercase tracking-[0.2em] pointer-events-none", isHighlighted ? "fill-white/80" : "fill-muted")}
+                    className={clsx("text-[6px] font-black uppercase tracking-[0.2em] pointer-events-none", isHighlighted || isBroken ? "fill-white/80" : "fill-muted")}
                   >
                     {isRoot ? 'SUMMIT' : node.isLeaf ? `BLOCK ${nIndex}` : `L${lIndex}`}
                   </text>
 
-                  {isTampered && (
-                     <circle cx={x - 36} cy={y + 10} r={2} className="fill-red-500 animate-ping" />
+                  {(isTampered || isBroken) && (
+                     <circle cx={x - 36} cy={y + 10} r={2} className="fill-red-200 animate-ping" />
                   )}
                 </motion.g>
               );

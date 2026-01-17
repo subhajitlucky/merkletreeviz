@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ShieldCheck, Hash, Database, Zap } from 'lucide-react';
+import { useSound } from '../../hooks/useSound';
 
 export const ProofPathVisualizer = () => {
   const [step, setStep] = useState(0);
+  const { playClick, playSuccess, playHover } = useSound();
   
   const coords = {
     root: { x: 200, y: 50 },
@@ -19,8 +21,22 @@ export const ProofPathVisualizer = () => {
     ]
   };
 
-  const next = () => setStep(s => (s + 1) % 5);
-  const reset = () => setStep(0);
+  const next = () => {
+    setStep(s => {
+      const nextStep = (s + 1) % 5;
+      if (nextStep === 4) {
+        playSuccess();
+      } else {
+        playClick();
+      }
+      return nextStep;
+    });
+  };
+
+  const reset = () => {
+    playClick();
+    setStep(0);
+  };
 
   return (
     <div className="flex flex-col items-center w-full h-full max-w-2xl py-2 space-y-6">
@@ -46,6 +62,7 @@ export const ProofPathVisualizer = () => {
 
         <button 
           onClick={step === 4 ? reset : next}
+          onMouseEnter={playHover}
           className="relative z-10 px-8 py-3 bg-primary text-primary-foreground text-xs font-black uppercase tracking-widest rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all group/btn"
         >
           <span className="relative z-10">{step === 4 ? "Restart" : step === 0 ? "Begin" : "Next Step"}</span>

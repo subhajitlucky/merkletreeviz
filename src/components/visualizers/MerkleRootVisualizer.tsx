@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, ShieldCheck, Hash, Database, Lock, Unlock } from 'lucide-react';
+import { useSound } from '../../hooks/useSound';
+import { ParticlePath } from '../ui/ParticlePath';
 
 export const MerkleRootVisualizer = () => {
   const [tamperedIndex, setTamperedIndex] = useState<number | null>(null);
+  const { playClick, playError, playHover } = useSound();
 
   const toggleTamper = (index: number) => {
-    setTamperedIndex(tamperedIndex === index ? null : index);
+    const isNewTamper = tamperedIndex !== index;
+    if (isNewTamper) {
+      playError();
+    } else {
+      playClick();
+    }
+    setTamperedIndex(isNewTamper ? index : null);
   };
 
   const isTampered = tamperedIndex !== null;
@@ -63,24 +72,16 @@ export const MerkleRootVisualizer = () => {
              <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 800 160" preserveAspectRatio="none">
                 {/* Root to Hash Nodes */}
                 {/* Left Branch */}
-                <motion.path 
-                  d="M 400 0 C 400 40, 200 40, 200 80" 
-                  animate={{ 
-                    stroke: isTampered && tamperedIndex! < 2 ? "#ef4444" : "var(--muted-foreground)",
-                    strokeWidth: isTampered && tamperedIndex! < 2 ? 3 : 2,
-                    opacity: isTampered && tamperedIndex! < 2 ? 1 : 0.3
-                  }}
-                  fill="none"
+                <ParticlePath 
+                  d="M 200 80 C 200 40, 400 40, 400 0" 
+                  active={true}
+                  color={isTampered && tamperedIndex! < 2 ? "#ef4444" : "rgba(163, 163, 163, 0.4)"}
                 />
                  {/* Right Branch */}
-                <motion.path 
-                  d="M 400 0 C 400 40, 600 40, 600 80" 
-                  animate={{ 
-                    stroke: isTampered && tamperedIndex! >= 2 ? "#ef4444" : "var(--muted-foreground)",
-                    strokeWidth: isTampered && tamperedIndex! >= 2 ? 3 : 2,
-                    opacity: isTampered && tamperedIndex! >= 2 ? 1 : 0.3
-                  }}
-                  fill="none"
+                 <ParticlePath 
+                  d="M 600 80 C 600 40, 400 40, 400 0" 
+                  active={true}
+                  color={isTampered && tamperedIndex! >= 2 ? "#ef4444" : "rgba(163, 163, 163, 0.4)"}
                 />
 
                 {/* Hash Nodes to Data Blocks */}
@@ -90,18 +91,11 @@ export const MerkleRootVisualizer = () => {
                   const active = tamperedIndex === i;
                   
                   return (
-                    <motion.path 
+                    <ParticlePath 
                       key={`path-${i}`}
-                      d={`M ${parentX} 80 C ${parentX} 120, ${childX} 120, ${childX} 160`}
-                      animate={{ 
-                        stroke: active ? "#ef4444" : "var(--muted-foreground)",
-                        strokeWidth: active ? 3 : 2,
-                        opacity: active ? 1 : 0.3,
-                        pathLength: 1 
-                      }}
-                      initial={{ pathLength: 0 }}
-                      transition={{ duration: 0.5 }}
-                      fill="none"
+                      d={`M ${childX} 160 C ${childX} 120, ${parentX} 120, ${parentX} 80`}
+                      active={true}
+                      color={active ? "#ef4444" : "rgba(163, 163, 163, 0.4)"}
                     />
                   );
                 })}
@@ -134,6 +128,7 @@ export const MerkleRootVisualizer = () => {
                   <motion.button
                     key={i}
                     onClick={() => toggleTamper(i)}
+                    onMouseEnter={playHover}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     animate={{

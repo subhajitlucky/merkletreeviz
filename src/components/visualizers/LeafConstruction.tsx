@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Database, Hash, ArrowRight, Fingerprint, ShieldCheck, Zap } from 'lucide-react';
+import { useSound } from '../../hooks/useSound';
 
 export const LeafConstruction = () => {
   const [step, setStep] = useState(0);
+  const { playClick, playHash, playSuccess } = useSound();
 
   const rawData = {
     id: "tx_8842",
@@ -15,8 +17,22 @@ export const LeafConstruction = () => {
 
   const leafHash = "0x7f8a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a";
 
-  const next = () => setStep((s) => (s + 1) % 4);
-  const reset = () => setStep(0);
+  useEffect(() => {
+    if (step === 1) {
+      playHash();
+    } else if (step === 3) {
+      playSuccess();
+    }
+  }, [step, playHash, playSuccess]);
+
+  const next = () => {
+    playClick();
+    setStep((s) => (s + 1) % 4);
+  };
+  const reset = () => {
+    playClick();
+    setStep(0);
+  };
 
   return (
     <div className="flex flex-col items-center w-full h-full max-w-2xl py-4 space-y-4 sm:space-y-8">
