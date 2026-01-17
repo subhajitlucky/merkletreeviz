@@ -9,7 +9,7 @@
   --foreground: #0a0a0a;
   
   --card: #ffffff;
-  --card-border: #e5e5e5;
+  --card-border: #d4d4d4;
   
   --primary: #000000;
   --primary-foreground: #ffffff;
@@ -22,8 +22,8 @@
   --accent-foreground: #ffffff;
   --accent-glow: rgba(37, 99, 235, 0.1);
   
-  --muted: #737373;
-  --muted-foreground: #a3a3a3;
+  --muted: #525252;
+  --muted-foreground: #737373;
   
   --success: #10b981;
   --grid-color: rgba(0, 0, 0, 0.03);
